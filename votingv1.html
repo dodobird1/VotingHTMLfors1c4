@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<!-- Author: cjy using Gemini-2.5 Pro -->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>匿名投票器（带结果统计）</title>
+    <!-- CSS 样式代码 -->
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', '黑体', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+            text-align: center;
+        }
+        .container {
+            background-color: white;
+            padding: 40px 50px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 700px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .candidates-wrapper {
+            display: flex;
+            justify-content: center;
+            gap: 20px; /* 候选人之间的间距 */
+            margin-bottom: 30px;
+        }
+        .candidate {
+            padding: 20px 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            width: 160px;
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 100px;
+        }
+        .candidate-key {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .vote-count {
+            font-size: 18px;
+            color: #d9534f; /* 红色字体显示票数 */
+            margin-top: 15px;
+            font-weight: bold;
+            height: 25px; /* 预留空间，防止显示时跳动 */
+        }
+        .instructions {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .button-wrapper {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .button {
+            width: 40%;
+            padding: 15px 0;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        #confirmButton {
+            background-color: #28a745;
+        }
+        #confirmButton:hover {
+            background-color: #218838;
+        }
+        #tallyButton {
+            background-color: #007bff;
+        }
+        #tallyButton:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>匿名投票系统</h1>
+        
+        <div class="candidates-wrapper">
+            <div class="candidate">
+                <div class="candidate-key">(A)</div>
+                <div id="name-a">刘墨舆</div>
+                <div class="vote-count" id="count-a"></div>
+            </div>
+            <div class="candidate">
+                <div class="candidate-key">(B)</div>
+                <div id="name-b">查睿言</div>
+                <div class="vote-count" id="count-b"></div>
+            </div>
+            <div class="candidate">
+                <div class="candidate-key">(C)</div>
+                <div id="name-c">黄美雯+吴岳宜</div>
+                <div class="vote-count" id="count-c"></div>
+            </div>
+            <div class="candidate">
+                <div class="candidate-key">(D)</div>
+                <div id="name-d">李欣航</div>
+                <div class="vote-count" id="count-d"></div>
+            </div>
+        </div>
+
+        <p class="instructions">请按键盘上的 <strong>a, b, c, d</strong> 键进行选择，然后点击下方按钮确认。（候选人按照演讲顺序排序）</p>
+        
+        <div class="button-wrapper">
+            <button id="confirmButton" class="button">确认投票</button>
+            <button id="tallyButton" class="button">统计结果</button>
+        </div>
+    </div>
+
+    <!-- JavaScript 逻辑代码 -->
+    <script>
+        // 定义候选人对象
+        const candidates = {
+            'a': '刘墨舆',
+            'b': '查睿言',
+            'c': '黄美雯+吴岳宜',
+            'd': '李欣航'
+        };
+
+        // 创建一个对象来存储票数，初始都为 0
+        const voteCounts = {
+            'a': 0,
+            'b': 0,
+            'c': 0,
+            'd': 0
+        };
+
+        // 用于存储最后一次按下的有效按键
+        let lastKeyPressed = null;
+
+        // 获取按钮元素
+        const confirmButton = document.getElementById('confirmButton');
+        const tallyButton = document.getElementById('tallyButton');
+
+        // 监听整个页面的键盘按下事件
+        document.addEventListener('keydown', function(event) {
+            const key = event.key.toLowerCase();
+            if (key in candidates) {
+                lastKeyPressed = key;
+                // 为增强匿名性，此处不进行任何视觉提示
+            }
+        });
+
+        // 为“确认投票”按钮添加点击事件
+        confirmButton.addEventListener('click', function() {
+            if (lastKeyPressed === null) {
+                alert('您尚未做出选择！\n请先按 a, b, c, 或 d 键选择候选人。');
+            } else {
+                // 对应候选人的票数加 1
+                voteCounts[lastKeyPressed]++;
+                
+                alert(`投票成功！\n\n您已完成本次投票。`);
+                
+                // 重置选择，以便下一个人投票
+                lastKeyPressed = null;
+                
+                // 调试时可以取消注释下面这行，在控制台查看实时票数
+                // console.log(voteCounts);
+            }
+        });
+
+        // 为“统计结果”按钮添加点击事件
+        tallyButton.addEventListener('click', function() {
+            // 遍历 voteCounts 对象，更新页面上显示的票数
+            for (const key in voteCounts) {
+                // 找到对应的显示票数的元素
+                const countElement = document.getElementById(`count-${key}`);
+                if (countElement) {
+                    // 更新其文本内容
+                    countElement.innerText = `得票: ${voteCounts[key]}`;
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>
